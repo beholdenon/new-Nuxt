@@ -35,14 +35,7 @@ async function onSubmit (event: FormSubmitEvent<any>) {
   try {
      const { data: responseData } = await useFetch('/api/users', {
         method: 'post',
-        body: { 
-          firstName: state.firstName,
-          lastName: state.lastName,
-          email: state.email,
-          password: state.password,
-          phone: state.phone,
-          role: state.role
-        }
+        body: state
     })
 
     if(responseData) {

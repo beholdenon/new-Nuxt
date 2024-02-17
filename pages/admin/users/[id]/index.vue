@@ -29,10 +29,6 @@ async function onSubmit (event: FormSubmitEvent<any>) {
         method: 'post',
         body: state
     })
-
-    if(responseData) {
-    }
-
     console.log(responseData.value)
   } catch (err) {
     if (err.statusCode === 422) {
@@ -70,13 +66,6 @@ const sortedMeetings = user.value.data.meetings.sort(function(a, b) {
   return dateA - dateB;
 });
 
-const formatDate = (d) => {
-  return new Date(d).toLocaleString('en-US', {
-    day: 'numeric',
-    year: 'numeric',
-    month: 'long',
-  })
-}
 </script>
 
 <template>

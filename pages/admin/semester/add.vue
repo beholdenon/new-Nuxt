@@ -19,10 +19,7 @@ async function onSubmit (event: FormSubmitEvent<any>) {
   try {
      const { data: responseData } = await useFetch('/api/semester', {
         method: 'post',
-        body: { 
-            name: state.name,
-          slug: state.slug
-        }
+        body: state
     })
 
     if(responseData) {

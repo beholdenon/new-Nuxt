@@ -8,7 +8,6 @@ const form = ref();
 const state = reactive({
     id: undefined,
   email: undefined,
-  password: undefined,
   firstName: undefined,
   lastName: undefined,
   phone: undefined,
@@ -46,17 +45,9 @@ const validate = (state: any): FormError[] => {
 
 async function onSubmit (event: FormSubmitEvent<any>) {
   try {
-    
      const responseData = await useFetch('/api/users/update', {
         method: 'post',
-        body: { 
-            id: state.id,
-          firstName: state.firstName,
-          lastName: state.lastName,
-          email: state.email,
-          phone: state.phone,
-          role: state.role
-       }
+        body: state
     })
 
     toast.add({ title: 'User has been updated.' });
