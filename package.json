@@ -1,0 +1,31 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@sidebase/nuxt-auth": "^0.6.7",
+    "@sidebase/nuxt-session": "^0.2.8",
+    "nuxt": "^3.10.2",
+    "vue": "^3.3.12",
+    "vue-router": "^4.2.5"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^2.12.3",
+    "@nuxt/ui-pro": "^0.7.5",
+    "@popperjs/core": "^2.11.8",
+    "date-fns": "^3.3.1",
+    "h3-formidable": "^1.0.0",
+    "mongoose": "^8.1.0",
+    "mongoose-bcrypt": "^1.11.0",
+    "sass": "^1.69.5",
+    "v-calendar": "^3.1.2"
+  }
+}
