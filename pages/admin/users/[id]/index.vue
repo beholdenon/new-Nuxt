@@ -2,120 +2,149 @@
 import { format } from 'date-fns'
 const { data, status, getCsrfToken, getProviders } = useAuth();
 const route = useRoute();
+const form = ref();
+const studentId = route.params.id;
 
-const { data: user } = await useFetch('/api/users/findOne', {
-  query: { _id: route.params.id }
+const { data: user, pending, error, refresh } = await useFetch('/api/users/findOne', {
+  key: 'user-' + studentId,
+  query: { _id: studentId }
 })
 
-
-const state = reactive({
-  body: undefined,
-  date: new Date(),
-  count: true,
-  studentId: user.value.data._id,
-  advisor: data.value?.user.name,
-  semester: 'Spring 2024'
-})
-
-const validate = (state: any): FormError[] => {
-  const errors = []
-  if (!state.body) errors.push({ path: 'body', message: 'Required' })
-  return errors
+async function refreshUserData() {
+  await refreshNuxtData('user-' + studentId);
 }
 
-async function onSubmit (event: FormSubmitEvent<any>) {
-  try {
-     const { data: responseData } = await useFetch('/api/meeting', {
-        method: 'post',
-        body: state
-    })
-    console.log(responseData.value)
-  } catch (err) {
-    if (err.statusCode === 422) {
-      form.value.setErrors(err.data.errors.map((err) => {
-        // Map validation errors to { path: string, message: string }
-      }))
-    }
-  }
-}
+
+
 
 const columns = [
 {
   key: 'date',
   label: 'Date',
-  sortable: true
+  sortable: true,
 },
 {
   key: 'advisor',
   label: 'Advisor',
-  sortable: true
+  sortable: true,
 },
 {
   key: 'body',
-  label: 'Notes'
+  label: 'Notes',
+  class: 'w-1/2'
 },
 {
   key: 'count',
   label: 'Count'
+},
+{
+  key: 'actions'
 }
 ]
 
-const sortedMeetings = user.value.data.meetings.sort(function(a, b) {
-  let dateA = new Date(a.date);
-  let dateB = new Date(b.date);
-  return dateA - dateB;
-});
+const items = (row) => [
+  [
+  {
+    label: 'Edit',
+    icon: 'i-heroicons-pencil-square-20-solid',
+    to: '/admin/users/' + studentId + '/meetings/' + row._id + '/edit'
+  },
+  {
+    label: 'Delete',
+    icon: 'i-heroicons-trash',
+    click: () => deleteMeeting(row._id, studentId)
+  }
+]
+]
+
+const links = [
+  {
+    label: user.value.data.email,
+    icon: 'i-heroicons-envelope'
+  },
+  {
+    label: user.value.data.phone,
+    icon: 'i-heroicons-device-phone-mobile'
+  },
+  {
+    icon: 'i-heroicons-chat-bubble-bottom-center-text',
+    label: 'Total Counted Meetings ' + user.value.data.countedMeetings
+  }
+]
 
 </script>
 
 <template>
-    <UContainer class="max-w-3xl w-full">
+    <UContainer class="max-w-7xl w-full">
       
-      <div class="container py-10 mx-auto">
+      <div class="container py-10 mx-auto flex-none">
+        <div class="flex space-x-4 justify-items-center align-center">
+          <div><UAvatar :alt="user.data.firstName + ' ' + user.data.lastName" size="xl" />
+        </div>
 
-      <UAvatar :alt="user.data.firstName + ' ' + user.data.lastName" size="xl" />
+        <div class="self-center grow">
+          <SectionTitle :title="user.data.firstName + ' ' + user.data.lastName" class=""/>
+      </div>
 
-        <UPageHeader :title="user.data.firstName + ' ' + user.data.lastName" :links="[{ label: 'Edit', color: 'white', icon: 'i-heroicons-pencil', to: '/admin/users/' + user.data._id + '/edit', target: '_self' }]" />
-        <UPageLinks
-    :links="[{ icon: 'i-heroicons-envelope', label: user.data.email }, { icon: 'i-heroicons-device-phone-mobile', label: user.data.phone }]" />
-  </div>
+      <div class="self-center flex-none">
+        <UButton
+        icon="i-heroicons-pencil-square"
+        size="sm"
+        color="gray"
+        variant="outline"
+        label="Edit User Profile"
+        :to="'/admin/users/' + studentId + '/edit'"
+        :trailing="false"
+      />
+      </div>
+</div>
+      
+        <UHorizontalNavigation :links="links" class="border-b border-gray-200 dark:border-gray-800" />
+</div>
 
     <div class="container py-10 mx-auto">
-    <SectionTitle title="Meetings" />
-    <UTable :columns="columns" :rows="sortedMeetings" v-model="selected" >
-    <template #date-data="{ row }">
+
+
+      <div class="flex space-x-4 justify-items-center align-center">
+
+
+        <div class="self-center grow">
+          <SectionTitle :title="'Meetings (' + user.data.countedMeetings + ')'" />
+      </div>
+
+      <div class="self-center flex-none">
+        <UButton
+        icon="i-heroicons-plus-circle"
+        size="sm"
+        color="gray"
+        variant="outline"
+        label="Add Meeting"
+        :to="'/admin/users/' + studentId + '/meetings/add'"
+        :trailing="false"
+      />
+      </div>
+</div>
+      
+<div class="container py-10 mx-auto">
+
+    <UTable :columns="columns" :rows="user.data.meetings" class="border-collapse border border-gray-800 table-auto whitespace-wrap overflow-hidden"  >
+   
+    <template #date-data="{ row }" >
        {{formatDate(row.date)}}
+    </template>
+
+    <template #count-data="{ row }">
+      <UIcon v-if="row.count === true" class="text-xl" name="i-heroicons-check-circle" />
+      <p v-else></p>
+    </template>
+
+    <template #actions-data="{ row }">
+      <UDropdown :items="items(row)">
+        <UButton color="gray" @click="row.click" variant="ghost" icon="i-heroicons-ellipsis-horizontal-20-solid" />
+      </UDropdown>
     </template>
       </UTable>
   </div>
-
-  <div class="container py-10 mx-auto">
-   <SectionTitle title="Add Meeting" />
-    <UForm :validate="validate" ref="form" :state="state" class="space-y-4" @submit="onSubmit" @error="onError">
-
-      <UFormGroup label="Date" name="date">
-    <UPopover :popper="{ placement: 'bottom-start' }">
-    <UButton icon="i-heroicons-calendar-days-20-solid" :label="format(state.date, 'd MMM, yyy')" />
-
-    <template #panel="{ close }">
-      <DatePicker v-model="state.date" @close="close" />
-      </template>
-    </UPopover>
-  </UFormGroup>
-
-  <UFormGroup label="Meeting Notes" name="body">
-    <UTextarea color="primary" v-model="state.body" />
-  </UFormGroup>
-
-  <UFormGroup label="Count Meeting" name="count">
-  <UToggle color="primary" v-model="state.count" />
-  </UFormGroup>
-
-<UButton type="submit">
-      Add Meeting
-    </UButton>
-</UForm>
 </div>
-
     </UContainer>
 </template>

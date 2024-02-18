@@ -1,14 +1,16 @@
 <script setup lang="ts">
-const { data: users } = await useFetch('/api/users');
+const { data: users, pending, error, refresh } = await useFetch('/api/users', {
+  key: 'users'
+})
 const userList = users.value.data;
 const q = ref('')
 const selected = ref()
 
 const filteredRows = computed(() => {
   if (!q.value) {
-    return userList
+    return users.value.data
   }
-  return userList.filter((u) => {
+  return users.value.data.filter((u) => {
     return Object.values(u).some((value) => {
       return String(value).toLowerCase().includes(q.value.toLowerCase())
     })
@@ -58,14 +60,56 @@ const items = (row) => [
     label: 'Edit',
     icon: 'i-heroicons-pencil-square-20-solid',
     to: '/admin/users/' + row._id + '/edit'
+  },
+  {
+    label: 'Delete',
+    icon: 'i-heroicons-trash',
+    click: () => deleteUser(row._id)
   }]
 ]
+
+async function refreshUserData() {
+  await refreshNuxtData('users');
+}
+
+async function deleteUser(userId) {
+  console.log(userId)
+  const { data: responseData } = await useFetch('/api/users/delete', {
+        method: 'post',
+        body: {userId: userId}
+    })
+
+    refreshUserData();
+}
 
 </script>
 
 <template>
-  <UContainer>
-    <UPageHeader title="Users" :links="[{ label: 'Add User', color: 'white', icon: 'i-heroicons-plus-circle', to: '/admin/users/add', target: '_self' }]" />
+    <UContainer class="max-w-7xl w-full">
+
+      <div class="container py-10 mx-auto flex-none">
+
+    <div class="flex space-x-4 justify-items-center align-center">
+
+
+<div class="self-center grow">
+  <SectionTitle title="Users" />
+</div>
+
+<div class="self-center flex-none">
+<UButton
+icon="i-heroicons-plus-circle"
+size="sm"
+color="gray"
+variant="outline"
+label="Add User"
+to="/admin/users/add"
+:trailing="false"
+/>
+</div>
+</div>
+</div>
+
     <div>
     <div class="flex px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
       <UInput v-model="q" placeholder="Filter users..." />
@@ -78,7 +122,7 @@ const items = (row) => [
 
     <template #actions-data="{ row }">
       <UDropdown :items="items(row)">
-        <UButton color="gray" variant="ghost" icon="i-heroicons-ellipsis-horizontal-20-solid" />
+        <UButton color="gray" @click="row.click" variant="ghost" icon="i-heroicons-ellipsis-horizontal-20-solid" />
       </UDropdown>
     </template>
     </UTable>

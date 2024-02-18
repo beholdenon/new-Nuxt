@@ -2,9 +2,9 @@ import { users } from "~/server/dbModels"
 
 export default defineEventHandler(async (event) => {
   const { studentId, semester, advisor, body, date, count } = await readBody(event)
+  console.log('/server/api/meeting/index.post');
   try {
     const student =  await users.findOne({_id: studentId});
-    console.log(student);
     const newMeetingData = await student.meetings.push({ semester, advisor, body, date, count });
     await student.save();
     

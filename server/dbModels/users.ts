@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "mongoose-bcrypt";
 
 const meetingSchema = new mongoose.Schema(
-  {
+  { 
     semester: String,
     advisor: String,
     body: String,
@@ -20,7 +20,8 @@ const schema = new mongoose.Schema(
     lastName: String,
     phone: String,
     role: String,
-    meetings: [meetingSchema] 
+    meetings: [meetingSchema] ,
+    countedMeetings: {type: Number, default: 0}
   },
   { timestamps: true, strict: true, strictQuery: true }
 );
